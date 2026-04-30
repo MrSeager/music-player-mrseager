@@ -1,9 +1,8 @@
 'use client';
 //Components
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-//Icons
-import { HiPlay, HiPause, HiPlayPause } from "react-icons/hi2";
+import Controls from "@/Components/Controls";
 
 interface tracksProps {
   cover: string;
@@ -14,20 +13,15 @@ export default function Home() {
   const [currTrack, setCurrTrack] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [tracks] = useState<tracksProps[]>([
     { cover: '/images/cover-1.jpg', track: '/music/lost-in-city-lights-145038.mp3' },
     { cover: '/images/cover-2.jpg', track: '/music/forest-lullaby-110624.mp3' },
   ]);
-
-  useEffect(() => {
-    if (!audioRef.current) return;
-
-    audioRef.current.load();
-    audioRef.current.play();
-    setIsPlaying(true);
-  }, [currTrack]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -49,6 +43,68 @@ export default function Home() {
       setCurrTrack((currTrack - 1 + tracks.length) % tracks.length);
     }
   };
+
+  //Play next after ending
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    const audio = audioRef.current;
+
+    const handleEnded = () => {
+      // Move to next track
+      setCurrTrack((prev) => (prev + 1) % tracks.length);
+    };
+
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [tracks.length]);
+
+  //Play
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    audioRef.current.load();
+
+    if (isPlaying) {
+      audioRef.current.play();
+    }
+  }, [currTrack]);
+
+  //Time
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    const audio = audioRef.current;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
+
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateDuration);
+
+    return() => {
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+    }
+  }, []);
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60).toString().padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  }
+
+  //Progress bar
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = value;
+    }
+  }
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center font-sans h-display
@@ -74,44 +130,30 @@ export default function Home() {
           </div>
 
           {/* Progress bar */}
-          <div className="grid grid-cols-2 w-full">
-            <p>0:00</p>
-            <p className="text-end">3:00</p>
-            <div className="border col-span-2">
-
-            </div>
+          <div className="grid grid-cols-2 w-full gap-2">
+            <p>{formatTime(currentTime)}</p>
+            <p className="text-end">{formatTime(duration)}</p>
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              value={currentTime}
+              onChange={handleSeek}
+              title="progress bar"
+              style={
+                      {
+                        "--progress": `${(currentTime / duration) * 100}%`,
+                      } as React.CSSProperties & { "--progress": string }
+                    }
+              className="progress-bar bg-[#E5E7EB] col-span-2 w-full h-1 cursor-pointer rounded-full"
+            />
           </div>
 
-          {/* Controls */}
-          <div className="flex gap-3 items-center">
-              <button
-                type="button"
-                title="prev"
-                onClick={() => changeTrack("prev")}
-                className="text-[#4D5562] duration-300 cursor-pointer
-                          hover:text-[#C93B76] hover:drop-shadow-[0_0_5px_#C93B76]"
-              >
-                <HiPlayPause size={30} className="rotate-180" />
-              </button>
-              <button
-                type="button"
-                title="play"
-                onClick={togglePlay}
-                className="bg-[#C93B76] p-4 rounded-full cursor-pointer duration-300 shadow-[#C93B76]
-                            hover:drop-shadow-[0_0_5px_#C93B76] active:rotate-180"
-              >
-                {isPlaying ? <HiPause size={20} /> : <HiPlay size={20} />}
-              </button>
-              <button
-                type="button"
-                title="prev"
-                onClick={() => changeTrack("next")}
-                className="text-[#4D5562] duration-300 cursor-pointer
-                          hover:text-[#C93B76] hover:drop-shadow-[0_0_5px_#C93B76]"
-              >
-                <HiPlayPause size={30} />
-              </button>
-          </div>
+          <Controls 
+            changeTrack={changeTrack}
+            togglePlay={togglePlay}
+            isPlaying={isPlaying}
+          />
 
           {/* Audio */}
           <audio ref={audioRef} src={tracks[currTrack].track} />

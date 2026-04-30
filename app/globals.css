@@ -39,3 +39,56 @@ body {
   100% { transform: translate(0,0) scale(1) }
 }
 
+/* Remove native appearance so custom track + thumb work */
+.progress-bar {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Chrome / Edge / Safari — track with dynamic fill + glow */
+.progress-bar::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    #C93B76 var(--progress),
+    #ffffff33 var(--progress)
+  );
+  filter: drop-shadow(0 0 5px #C93B76);
+}
+
+/* Firefox — filled portion */
+.progress-bar::-moz-range-progress {
+  height: 4px;
+  border-radius: 4px;
+  background: #C93B76;
+  filter: drop-shadow(0 0 5px #C93B76);
+}
+
+/* Firefox — unfilled portion */
+.progress-bar::-moz-range-track {
+  height: 4px;
+  border-radius: 4px;
+  background: #ffffff33;
+}
+
+/* Hide thumb — Chrome, Edge, Safari */
+.progress-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+  border: none;
+}
+
+/* Hide thumb — Firefox */
+.progress-bar::-moz-range-thumb {
+  width: 0;
+  height: 0;
+  background: transparent;
+  border: none;
+}
+
+
+
