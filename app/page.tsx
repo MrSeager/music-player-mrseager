@@ -3,24 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import { parseBlob, IAudioMetadata } from "music-metadata-browser";
 import Image from "next/image";
-import Controls from "@/Components/Controls";
-import ProgressBar from "@/Components/ProgressBar";
-import Titles from "@/Components/Titles";
-
-interface tracksProps {
-  url: string;
-  file?: File; // optional, only for user-added tracks
-  title?: string | null;
-  artist?: string | null;
-  cover?: string | null;
-}
+import Player from "@/Components/Player";
+import TracksList from "@/Components/TracksList";
+//Types
+import { tracksProps } from "@/types/types";
 
 export default function Home() {
   const [currTrack, setCurrTrack] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-
-  const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -31,56 +21,6 @@ export default function Home() {
     { url: '/music/lost-in-city-lights-145038.mp3' },
     { url: '/music/forest-lullaby-110624.mp3' },
   ]);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (audio.paused) {
-      audio.play();
-      setIsPlaying(true);
-    } else {
-      audio.pause();
-      setIsPlaying(false);
-    }
-  };
-
-  const changeTrack = (direction: "next" | "prev") => {
-    if (direction === "next") {
-      setCurrTrack((currTrack + 1) % tracks.length);
-    } else {
-      setCurrTrack((currTrack - 1 + tracks.length) % tracks.length);
-    }
-  };
-
-  //Play next after ending
-  useEffect(() => {
-    if (!audioRef.current) return;
-
-    const audio = audioRef.current;
-
-    const handleEnded = () => {
-      // Move to next track
-      setCurrTrack((prev) => (prev + 1) % tracks.length);
-    };
-
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [tracks.length]);
-
-  //Play
-  useEffect(() => {
-    if (!audioRef.current) return;
-
-    audioRef.current.load();
-
-    if (isPlaying) {
-      audioRef.current.play();
-    }
-  }, [currTrack]);
 
   //Loading metadata
   useEffect(() => {
@@ -202,86 +142,73 @@ export default function Home() {
                     bg-gradient-to-r from-[#4c3346] via-[#422e53] to-[#28355c]
                     bg-[length:200%_200%]
                     animate-[gradient-move_8s_ease_infinite]">
-      <main className="flex flex-1 flex-col items-center justify-center w-full max-w-[120rem]">
-        {/*test area start*/}
-        <input
-          id="filePicker"
-          type="file"
-          title="filePicker"
-          accept="audio/*"
-          multiple
-          className="hidden"
-          onChange={handleFileUpload}
+      <main className="group grid grid-cols-3 w-full max-w-[120rem] h-screen">
+
+        <div>
+
+        </div>
+        <Player 
+          coverImage={coverImage} 
+          metadata={metadata}
+          audioRef={audioRef} 
+          currTrack={currTrack} 
+          tracks={tracks} 
+          isPlaying={isPlaying}
+          setIsPlaying={setIsPlaying} 
+          setCurrTrack={setCurrTrack}
         />
-
-        <button
-          type="button"
-          onClick={() => document.getElementById("filePicker")?.click()}
-          className="mb-4 px-4 py-2 rounded bg-white text-black"
-        >
-          Add Tracks
-        </button>
-        {/*test area end*/}
-
-        <div className="aspect-4/6 w-[22rem] bg-[#212936ab] p-5 rounded-[15px] flex flex-col items-center justify-between">
-          
-          {/* Cover */}
-          <div className="relative overflow-hidden rounded-[15px] w-[306px] h-[288px] flex items-center justify-center">
-            <Image 
-              src={coverImage || '/images/cover-1.jpg'}
-              alt="cover image"
-              fill
-              className="rounded-[15px] object-cover"
+        
+        <TracksList 
+          tracks={tracks} 
+          currTrack={currTrack} 
+          setTracks={setTracks} 
+          setCurrTrack={setCurrTrack}
+        />
+        {/*<div className="">
+          <div className="w-full flex flex-col gap-2 overflowy-scroll">
+            <input
+              id="filePicker"
+              type="file"
+              title="filePicker"
+              accept="audio/*"
+              multiple
+              className="hidden"
+              onChange={handleFileUpload}
             />
-          </div>
-          
-          <Titles 
-            metadata={metadata}
-          />
-          <ProgressBar 
-            audioRef={audioRef}
-            currentTime={currentTime}
-            duration={duration}
-            setCurrentTime={setCurrentTime}
-            setDuration={setDuration}
-          />
-          <Controls 
-            changeTrack={changeTrack}
-            togglePlay={togglePlay}
-            isPlaying={isPlaying}
-          />
 
-          {/* Audio */}
-          <audio ref={audioRef} src={tracks[currTrack].url} />
-        </div>
-
-        <div className="w-full flex flex-col gap-2">
-          {tracks.map((track, index) => (
-            <div
-              key={index}
-              className={`flex items-center gap-3 p-2 rounded cursor-pointer
-                ${index === currTrack ? "bg-white/20" : "bg-white/5"}`}
-              onClick={() => setCurrTrack(index)}
+            <button
+              type="button"
+              onClick={() => document.getElementById("filePicker")?.click()}
+              className="mb-4 px-4 py-2 rounded bg-white text-black"
             >
-              {/* Small cover */}
-              <div className="relative w-12 h-12">
-                <Image
-                  src={track.cover || "/images/default-cover.jpg"}
-                  alt="cover"
-                  fill
-                  className="object-cover rounded"
-                />
-              </div>
+              Add Tracks
+            </button>
+            {tracks.map((track, index) => (
+              <div
+                key={index}
+                className={`flex items-center gap-3 p-2 rounded cursor-pointer
+                  ${index === currTrack ? "bg-white/20" : "bg-white/5"}`}
+                onClick={() => setCurrTrack(index)}
+              >
+                
+                <div className="relative w-12 h-12">
+                  <Image
+                    src={track.cover || "/images/default-cover.jpg"}
+                    alt="cover"
+                    fill
+                    className="object-cover rounded"
+                  />
+                </div>
 
-              {/* Titles */}
-              <div className="flex flex-col">
-                <p className="text-sm font-semibold">{track.title || "Unknown Title"}</p>
-                <p className="text-xs opacity-70">{track.artist || "Unknown Artist"}</p>
+                
+                <div className="flex flex-col">
+                  <p className="text-sm font-semibold">{track.title || "Unknown Title"}</p>
+                  <p className="text-xs opacity-70">{track.artist || "Unknown Artist"}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-
+            ))}
+          </div>
+        </div>*/}
       </main>
     </div>
   );

@@ -23,7 +23,7 @@ export default function Controls({ changeTrack, togglePlay, isPlaying }: Control
                 type="button"
                 title="play"
                 onClick={togglePlay}
-                className="bg-[#C93B76] p-4 rounded-full cursor-pointer duration-300 shadow-[#C93B76]
+                className="bg-[#C93B76] text-[#E5E7EB] p-4 rounded-full cursor-pointer duration-300 shadow-[#C93B76]
                             hover:drop-shadow-[0_0_5px_#C93B76] active:rotate-180"
             >
                 {isPlaying ? <HiPause size={20} /> : <HiPlay size={20} />}

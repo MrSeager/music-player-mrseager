@@ -1,0 +1,28 @@
+import { RefObject, Dispatch } from "react";
+import { IAudioMetadata } from "music-metadata-browser";
+
+export interface tracksProps {
+  url: string;
+  file?: File;
+  title?: string | null;
+  artist?: string | null;
+  cover?: string | null;
+}
+
+export interface PlayerProps {
+    coverImage: string | null;
+    metadata: IAudioMetadata | null;
+    audioRef: RefObject<HTMLAudioElement | null>;
+    currTrack: number;
+    tracks: tracksProps[];
+    isPlaying: boolean;
+    setIsPlaying: Dispatch<React.SetStateAction<boolean>>;
+    setCurrTrack: Dispatch<React.SetStateAction<number>>;
+}
+
+export interface TracksListProps {
+    tracks: tracksProps[];
+    currTrack: number;
+    setTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
+    setCurrTrack: Dispatch<React.SetStateAction<number>>;
+}
