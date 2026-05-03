@@ -2,7 +2,6 @@
 //Components
 import { useState, useRef, useEffect } from "react";
 import { parseBlob, IAudioMetadata } from "music-metadata-browser";
-import Image from "next/image";
 import Player from "@/Components/Player";
 import TracksList from "@/Components/TracksList";
 //Types
@@ -103,39 +102,7 @@ export default function Home() {
     }
 
     loadMetadata();
-  }, [currTrack]);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const fileArray = Array.from(files);
-
-    const newTracks: tracksProps[] = [];
-
-    for (const file of fileArray) {
-      // Parse metadata directly from the File
-      const data = await parseBlob(file);
-
-      let newCover: string | null = null;
-
-      if (data.common.picture?.length) {
-        const pic = data.common.picture[0];
-        const base64 = Buffer.from(pic.data).toString("base64");
-        newCover = `data:${pic.format};base64,${base64}`;
-      }
-
-      newTracks.push({
-        url: URL.createObjectURL(file),
-        file,
-        title: data.common.title || file.name,
-        artist: data.common.artist || "Unknown Artist",
-        cover: newCover,
-      });
-    }
-
-    setTracks(prev => [...prev, ...newTracks]);
-  };
+  }, [currTrack, tracks[currTrack]]);
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center font-sans h-display

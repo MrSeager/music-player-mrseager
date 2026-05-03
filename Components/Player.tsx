@@ -64,7 +64,7 @@ export default function Player({
         if (isPlaying) {
             audioRef.current.play();
         }
-    }, [currTrack]);
+    }, [tracks[currTrack]?.url, isPlaying]);
 
     return (
         <div className="flex items-center justify-center">
