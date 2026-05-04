@@ -21,8 +21,21 @@ export interface PlayerProps {
 }
 
 export interface TracksListProps {
-    tracks: tracksProps[];
+    allTracks: tracksProps[];
     currTrack: number;
-    setTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
+    playlistName: string;
+    playlistTracks: tracksProps[];
+    setAllTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
+    setPlaylistName: (playlistName: string) => void;
+    setPlaylistTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
+}
+
+export interface PlaylistListProps {
+    allTracks: tracksProps[];
+    playlistName: string; 
+    playlistTracks: tracksProps[];
+    setPlaylistTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
+    setCurrTrack: Dispatch<React.SetStateAction<number>>;
+    setPlaylistName: (playlistName: string) => void;
 }

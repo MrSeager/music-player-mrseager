@@ -4,12 +4,13 @@ import Image from "next/image";
 //Icons
 import { HiDocumentAdd } from "react-icons/hi";
 import { MdDeleteForever } from "react-icons/md";
+import { FaSave } from "react-icons/fa";
 //Types
 import { tracksProps, TracksListProps } from "@/types/types";
 
 export default function TracksList({ 
-                                    tracks, currTrack, 
-                                    setTracks, setCurrTrack 
+                                    allTracks, currTrack, playlistName, playlistTracks,
+                                    setAllTracks, setCurrTrack, setPlaylistName, setPlaylistTracks
                                 }: TracksListProps) {
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -40,11 +41,21 @@ export default function TracksList({
             });
         }
 
-        setTracks(prev => [...prev, ...newTracks]);
+        //setAllTracks(prev => [...prev, ...newTracks]);
+        setAllTracks(prev => {
+            const updated = [...prev, ...newTracks];
+
+            // If default playlist is active → add new tracks to playlistTracks too
+            if (playlistName === "Default") {
+                setPlaylistTracks(updated);
+            }
+
+            return updated;
+        });
     };
 
-    const handleRemoveTrack = (index: number) => {
-        setTracks(prev => {
+    /*const handleRemoveTrack = (index: number) => {
+        setAllTracks(prev => {
             const updated = prev.filter((_, i) => i !== index);
 
             // If playlist becomes empty
@@ -73,13 +84,76 @@ export default function TracksList({
 
             return updated;
         });
+    };*/
+
+    const handleRemoveTrack = (index: number) => {
+        setPlaylistTracks(prev => {
+            const updated = prev.filter((_, i) => i !== index);
+
+            if (updated.length === 0) {
+                setPlaylistTracks(allTracks);   // restore default playlist
+                setPlaylistName("Default");
+                setCurrTrack(0);
+                return allTracks;
+            }
+
+            // CASE 1: Deleted the currently playing track
+            if (currTrack === index) {
+                if (index >= updated.length) {
+                    setCurrTrack(0); // wrap to start
+                } else {
+                    setCurrTrack(index); // play next track
+                }
+            }
+
+            // CASE 2: Deleted a track before the current one
+            else if (currTrack > index) {
+                setCurrTrack(currTrack - 1);
+            }
+
+            return updated;
+        });
     };
+
+    const handleSavePlaylist = () => {
+        if (!playlistName.trim()) {
+            alert("Enter playlist name");
+            return;
+        }
+
+        if (playlistName === "Default") {
+            alert("You cannot save a playlist named 'Default'");
+            return;
+        }
+
+        const names = playlistTracks.map(t => t.file?.name || t.title);
+
+        const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
+
+        if (saved[playlistName]) {
+            alert("A playlist with this name already exists");
+            return;
+        }
+        
+        saved [playlistName] = names;
+
+        localStorage.setItem("playlists", JSON.stringify(saved));
+
+        alert("Playlist saved");
+    }
 
     return(
         <div className="p-2 overflow-hidden">
             <div className="bg-[#212936ab] rounded-[15px] p-2 opacity-0 ease-out translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
                             group-hover:opacity-100 group-hover:translate-x-0">
-                <div className="w-full flex justify-end px-3">
+                <div className="w-full flex justify-between px-3">
+                    <input 
+                        type="text"
+                        title="playlist name"
+                        placeholder="Playlist name"
+                        value={playlistName}
+                        onChange={(e) => setPlaylistName(e.target.value)}
+                    />
                     <input
                         id="filePicker"
                         type="file"
@@ -89,18 +163,29 @@ export default function TracksList({
                         className="hidden"
                         onChange={handleFileUpload}
                     />
-                    <button
-                        type="button"
-                        title="add"
-                        onClick={() => document.getElementById("filePicker")?.click()}
-                        className="cursor-pointer p-1 aspect-1/1 text-[25px] rounded bg-[#C93B76] text-[#E5E7EB] duration-300
-                                    hover:drop-shadow-[0_0_5px_#C93B76] group/button"
-                    >
-                        <HiDocumentAdd size={25} className="group-active/button:rotate-180 duration-200" />
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            title="save playlist"
+                            onClick={handleSavePlaylist}
+                            className="cursor-pointer p-1 aspect-1/1 text-[25px] rounded bg-[#C93B76] text-[#E5E7EB] duration-300
+                                        hover:drop-shadow-[0_0_5px_#C93B76] group/button"
+                        >
+                            <FaSave size={25} className="group-active/button:rotate-180 duration-200" />
+                        </button>
+                        <button
+                            type="button"
+                            title="add"
+                            onClick={() => document.getElementById("filePicker")?.click()}
+                            className="cursor-pointer p-1 aspect-1/1 text-[25px] rounded bg-[#C93B76] text-[#E5E7EB] duration-300
+                                        hover:drop-shadow-[0_0_5px_#C93B76] group/button"
+                        >
+                            <HiDocumentAdd size={25} className="group-active/button:rotate-180 duration-200" />
+                        </button>
+                    </div>
                 </div>
                 <div className="w-full rounded-lg p-2 flex-1 overflow-y-auto flex flex-col gap-2">
-                    {tracks.map((track, index) => (
+                    {playlistTracks.map((track, index) => (
                         <div
                             key={index}
                             className={`flex rounded duration-300 hover:scale-103
@@ -108,8 +193,7 @@ export default function TracksList({
                         >
                             <button
                                 type="button"
-                                className={`cursor-pointer w-full flex items-center gap-3 p-2 
-                                            `}
+                                className={`cursor-pointer w-full flex items-center gap-3 p-2`}
                                 onClick={() => setCurrTrack(index)}
                             >
                                 <h3 className="font-semibold">{index + 1}.</h3>

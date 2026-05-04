@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { parseBlob, IAudioMetadata } from "music-metadata-browser";
 import Player from "@/Components/Player";
 import TracksList from "@/Components/TracksList";
+import PlaylistList from "@/Components/PlaylistsList";
 //Types
 import { tracksProps } from "@/types/types";
 
@@ -16,15 +17,17 @@ export default function Home() {
   const [metadata, setMetadata] = useState<IAudioMetadata | null>(null); //metadata
   const [coverImage, setCoverImage] = useState<string | null>(null);
 
-  const [tracks, setTracks] = useState<tracksProps[]>([
+  const [allTracks, setAllTracks] = useState<tracksProps[]>([
     { url: '/music/lost-in-city-lights-145038.mp3' },
     { url: '/music/forest-lullaby-110624.mp3' },
   ]);
+  const [playlistTracks, setPlaylistTracks] = useState<tracksProps[]>([]);
+  const [playlistName, setPlaylistName] = useState<string>("");
 
   //Loading metadata
   useEffect(() => {
     async function loadDefaultMetadata() {
-      const updated = [...tracks];
+      const updated = [...allTracks];
 
       for (let i = 0; i < updated.length; i++) {
         const track = updated[i];
@@ -52,7 +55,7 @@ export default function Home() {
         };
       }
 
-      setTracks(updated);
+      setAllTracks(updated);
     }
 
     loadDefaultMetadata();
@@ -60,16 +63,15 @@ export default function Home() {
 
   useEffect(() => {
     async function loadMetadata() {
-      const track = tracks[currTrack];
+      const activeTracks = playlistTracks.length > 0 ? playlistTracks : allTracks;
+      const track = activeTracks[currTrack];
       if (!track) return;
 
       let blob: Blob;
 
       if (track.file) {
-        // User uploaded file → use the File directly
         blob = track.file;
       } else {
-        // Default track → fetch from server
         const res = await fetch(track.url);
         blob = await res.blob();
       }
@@ -77,7 +79,6 @@ export default function Home() {
       const data = await parseBlob(blob);
       setMetadata(data);
 
-      // Extract cover
       let newCover: string | null = null;
 
       if (data.common.picture?.length) {
@@ -88,21 +89,44 @@ export default function Home() {
 
       setCoverImage(newCover);
 
-      // Update track metadata
-      setTracks(prev => {
-        const updated = [...prev];
-        updated[currTrack] = {
-          ...updated[currTrack],
-          title: data.common.title || "Unknown Title",
-          artist: data.common.artist || "Unknown Artist",
-          cover: newCover,
-        };
-        return updated;
-      });
+      // Update metadata in the correct track list
+      if (playlistTracks.length > 0) {
+        setPlaylistTracks(prev => {
+          const updated = [...prev];
+          updated[currTrack] = {
+            ...updated[currTrack],
+            title: data.common.title || "Unknown Title",
+            artist: data.common.artist || "Unknown Artist",
+            cover: newCover,
+          };
+          return updated;
+        });
+      } else {
+        setAllTracks(prev => {
+          const updated = [...prev];
+          updated[currTrack] = {
+            ...updated[currTrack],
+            title: data.common.title || "Unknown Title",
+            artist: data.common.artist || "Unknown Artist",
+            cover: newCover,
+          };
+          return updated;
+        });
+      }
     }
 
     loadMetadata();
-  }, [currTrack, tracks[currTrack]]);
+  }, [currTrack, playlistTracks, allTracks.length]);
+
+  useEffect(() => {
+    setPlaylistName("Default");
+  }, []);
+
+  useEffect(() => {
+    if (playlistName === "Default") {
+      setPlaylistTracks(allTracks);
+    }
+  }, [allTracks]);
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center font-sans h-display
@@ -111,71 +135,39 @@ export default function Home() {
                     animate-[gradient-move_8s_ease_infinite]">
       <main className="group grid grid-cols-3 w-full max-w-[120rem] h-screen">
 
-        <div>
+        <PlaylistList 
+          allTracks={allTracks}
+          playlistName={playlistName}
+          playlistTracks={playlistTracks}
+          setPlaylistTracks={setPlaylistTracks}
+          setCurrTrack={setCurrTrack}
+          setPlaylistName={setPlaylistName}
+        />
 
-        </div>
         <Player 
           coverImage={coverImage} 
           metadata={metadata}
           audioRef={audioRef} 
           currTrack={currTrack} 
-          tracks={tracks} 
+          tracks={playlistTracks.length > 0 ? playlistTracks : allTracks} 
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying} 
           setCurrTrack={setCurrTrack}
         />
         
         <TracksList 
-          tracks={tracks} 
+          allTracks={allTracks} 
+          setAllTracks={setAllTracks} 
+
+          playlistName={playlistName}
+          setPlaylistName={setPlaylistName}
+
+          playlistTracks={playlistTracks}
+          setPlaylistTracks={setPlaylistTracks}
+
           currTrack={currTrack} 
-          setTracks={setTracks} 
           setCurrTrack={setCurrTrack}
         />
-        {/*<div className="">
-          <div className="w-full flex flex-col gap-2 overflowy-scroll">
-            <input
-              id="filePicker"
-              type="file"
-              title="filePicker"
-              accept="audio/*"
-              multiple
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-
-            <button
-              type="button"
-              onClick={() => document.getElementById("filePicker")?.click()}
-              className="mb-4 px-4 py-2 rounded bg-white text-black"
-            >
-              Add Tracks
-            </button>
-            {tracks.map((track, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-3 p-2 rounded cursor-pointer
-                  ${index === currTrack ? "bg-white/20" : "bg-white/5"}`}
-                onClick={() => setCurrTrack(index)}
-              >
-                
-                <div className="relative w-12 h-12">
-                  <Image
-                    src={track.cover || "/images/default-cover.jpg"}
-                    alt="cover"
-                    fill
-                    className="object-cover rounded"
-                  />
-                </div>
-
-                
-                <div className="flex flex-col">
-                  <p className="text-sm font-semibold">{track.title || "Unknown Title"}</p>
-                  <p className="text-xs opacity-70">{track.artist || "Unknown Artist"}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>*/}
       </main>
     </div>
   );
