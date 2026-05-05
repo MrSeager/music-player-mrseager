@@ -6,49 +6,10 @@ import { PlaylistListProps } from "@/types/types";
 //Icons
 import { MdDeleteForever } from "react-icons/md";
 
-export default function PlaylistList({ allTracks, playlistName, playlistTracks,
-                                        setPlaylistTracks, setCurrTrack, setPlaylistName }: PlaylistListProps) {
-    const [savedPlaylists, setSavedPlaylists] = useState<string[]>([]);
+export default function PlaylistList({ allTracks, playlistName, playlistTracks, savedPlaylists, 
+                                        refreshPlaylists, loadPlaylist,
+                                        setPlaylistTracks, setCurrTrack, setPlaylistName, setSavedPlaylists }: PlaylistListProps) {
 
-    useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
-        setSavedPlaylists(Object.keys(saved));
-    }, [playlistName, playlistTracks]);
-
-    const loadPlaylist = (name: string) => {
-        if (name === "Default") {
-            setPlaylistName("Default");
-            setPlaylistTracks(allTracks);
-            setCurrTrack(0);
-            return;
-        }
-
-        const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
-        const fileNames = saved[name] ?? [];
-
-        // Filter matching tracks
-        const matched = allTracks.filter(t =>
-            fileNames.includes(t.file?.name || t.title)
-        );
-
-        // Detect missing tracks
-        const missing = fileNames.filter((savedName: string) =>
-            !allTracks.some(t => (t.file?.name || t.title) === savedName)
-        );
-
-        // Load matched tracks
-        setPlaylistName(name);
-        setPlaylistTracks(matched);
-        setCurrTrack(0);
-
-        // If some tracks were missing → notify user
-        if (missing.length > 0) {
-            alert(
-                `Some tracks were not loaded because they were not uploaded:\n\n` +
-                missing.join("\n")
-            );
-        }
-    };
 
     const deletePlaylist = (name: string) => {
         if (name === "Default") {
@@ -61,6 +22,7 @@ export default function PlaylistList({ allTracks, playlistName, playlistTracks,
         delete saved[name]; // remove playlist
 
         localStorage.setItem("playlists", JSON.stringify(saved));
+        refreshPlaylists();
 
         // Update UI list
         setSavedPlaylists(Object.keys(saved));
@@ -72,6 +34,11 @@ export default function PlaylistList({ allTracks, playlistName, playlistTracks,
             setCurrTrack(0);
         }
     };
+
+    useEffect(() => {
+        const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
+        setSavedPlaylists(Object.keys(saved));
+    }, [setSavedPlaylists]);
     
     return(
         <div className="p-2 overflow-hidden">

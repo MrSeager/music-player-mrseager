@@ -25,6 +25,7 @@ export interface TracksListProps {
     currTrack: number;
     playlistName: string;
     playlistTracks: tracksProps[];
+    refreshPlaylists: () => void;
     setAllTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
     setPlaylistName: (playlistName: string) => void;
@@ -35,7 +36,11 @@ export interface PlaylistListProps {
     allTracks: tracksProps[];
     playlistName: string; 
     playlistTracks: tracksProps[];
+    savedPlaylists: string[];
+    refreshPlaylists: () => void;
+    loadPlaylist: (name: string) => void;
     setPlaylistTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
     setPlaylistName: (playlistName: string) => void;
+    setSavedPlaylists: (savedPlaylists: string[]) => void;
 }

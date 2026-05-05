@@ -9,7 +9,7 @@ import { FaSave } from "react-icons/fa";
 import { tracksProps, TracksListProps } from "@/types/types";
 
 export default function TracksList({ 
-                                    allTracks, currTrack, playlistName, playlistTracks,
+                                    allTracks, currTrack, playlistName, playlistTracks, refreshPlaylists,
                                     setAllTracks, setCurrTrack, setPlaylistName, setPlaylistTracks
                                 }: TracksListProps) {
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,38 +53,6 @@ export default function TracksList({
             return updated;
         });
     };
-
-    /*const handleRemoveTrack = (index: number) => {
-        setAllTracks(prev => {
-            const updated = prev.filter((_, i) => i !== index);
-
-            // If playlist becomes empty
-            if (updated.length === 0) {
-                setCurrTrack(0);
-                return updated;
-            }
-
-            // CASE 1: Deleted the currently playing track
-            if (currTrack === index) {
-                // If it was the last track → go to 0
-                if (index >= updated.length) {
-                    setCurrTrack(0);
-                } else {
-                    // Otherwise → play the next track (same index now points to next)
-                    setCurrTrack(index);
-                }
-            }
-
-            // CASE 2: Deleted a track before the current one
-            else if (currTrack > index) {
-                setCurrTrack(currTrack - 1);
-            }
-
-            // CASE 3: Deleted a track after the current one → do nothing
-
-            return updated;
-        });
-    };*/
 
     const handleRemoveTrack = (index: number) => {
         setPlaylistTracks(prev => {
@@ -138,7 +106,7 @@ export default function TracksList({
         saved [playlistName] = names;
 
         localStorage.setItem("playlists", JSON.stringify(saved));
-
+        refreshPlaylists();
         alert("Playlist saved");
     }
 
@@ -185,7 +153,11 @@ export default function TracksList({
                     </div>
                 </div>
                 <div className="w-full rounded-lg p-2 flex-1 overflow-y-auto flex flex-col gap-2">
-                    {playlistTracks.map((track, index) => (
+                    {playlistTracks.length === 0 ? (
+                        <p className="text-center text-[#E5E7EB]/60 py-4">
+                            No tracks in this playlist
+                        </p>
+                    ) : (playlistTracks.map((track, index) => (
                         <div
                             key={index}
                             className={`flex rounded duration-300 hover:scale-103
@@ -223,7 +195,7 @@ export default function TracksList({
                                 <MdDeleteForever size={25} className="group-active/button:rotate-180 duration-200 mx-auto" />
                             </button>
                         </div>
-                    ))}
+                    )))}
                 </div>
             </div>
         </div>

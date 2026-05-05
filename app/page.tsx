@@ -22,7 +22,59 @@ export default function Home() {
     { url: '/music/forest-lullaby-110624.mp3' },
   ]);
   const [playlistTracks, setPlaylistTracks] = useState<tracksProps[]>([]);
-  const [playlistName, setPlaylistName] = useState<string>("");
+  const [playlistName, setPlaylistName] = useState<string>("Default");
+  const [savedPlaylists, setSavedPlaylists] = useState<string[]>([]);
+
+  const refreshPlaylists = () => {
+      const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
+      setSavedPlaylists(Object.keys(saved));
+  };
+
+  const loadPlaylist = (name: string) => {
+    if (name === "Default") {
+      setPlaylistName("Default");
+      setPlaylistTracks(allTracks);
+      setCurrTrack(0);
+      return;
+    }
+
+    const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
+    const fileNames = saved[name] ?? [];
+
+    // Filter matching tracks
+    const matched = allTracks.filter(t =>
+      fileNames.includes(t.file?.name || t.title)
+    );
+
+    if (matched.length === 0) {
+      alert("This playlist has no available tracks. Switching to Default.");
+
+      setPlaylistName("Default");
+      setPlaylistTracks(allTracks);
+      setCurrTrack(0);
+      setMetadata(null);
+      setCoverImage(null);
+      return;
+    }
+
+    // Detect missing tracks
+    const missing = fileNames.filter((savedName: string) =>
+        !allTracks.some(t => (t.file?.name || t.title) === savedName)
+    );
+
+    // Load matched tracks
+    setPlaylistName(name);
+    setPlaylistTracks(matched);
+    setCurrTrack(0);
+
+    // If some tracks were missing → notify user
+    if (missing.length > 0) {
+      alert(
+          `Some tracks were not loaded because they were not uploaded:\n\n` +
+          missing.join("\n")
+      );
+    }
+  };
 
   //Loading metadata
   useEffect(() => {
@@ -61,7 +113,7 @@ export default function Home() {
     loadDefaultMetadata();
   }, []); // runs once on mount
 
-  useEffect(() => {
+  /*useEffect(() => {
     async function loadMetadata() {
       const activeTracks = playlistTracks.length > 0 ? playlistTracks : allTracks;
       const track = activeTracks[currTrack];
@@ -116,17 +168,88 @@ export default function Home() {
     }
 
     loadMetadata();
-  }, [currTrack, playlistTracks, allTracks.length]);
+  }, [currTrack, playlistTracks, allTracks.length]);*/
 
   useEffect(() => {
-    setPlaylistName("Default");
-  }, []);
+    async function loadMetadata() {
+      const activeTracks =
+        playlistName === "Default" ? allTracks : playlistTracks;
+
+      // no tracks at all for current context
+      if (activeTracks.length === 0) {
+        setMetadata(null);
+        setCoverImage(null);
+        return;
+      }
+
+      if (currTrack < 0 || currTrack >= activeTracks.length) {
+        setMetadata(null);
+        setCoverImage(null);
+        return;
+      }
+
+      const track = activeTracks[currTrack];
+      if (!track) return;
+
+      let blob: Blob;
+
+      if (track.file) {
+        blob = track.file;
+      } else {
+        const res = await fetch(track.url);
+        blob = await res.blob();
+      }
+
+      const data = await parseBlob(blob);
+      setMetadata(data);
+
+      let newCover: string | null = null;
+
+      if (data.common.picture?.length) {
+        const pic = data.common.picture[0];
+        const base64 = Buffer.from(pic.data).toString("base64");
+        newCover = `data:${pic.format};base64,${base64}`;
+      }
+
+      setCoverImage(newCover);
+
+      if (playlistName === "Default") {
+        setAllTracks(prev => {
+          const updated = [...prev];
+          updated[currTrack] = {
+            ...updated[currTrack],
+            title: data.common.title || "Unknown Title",
+            artist: data.common.artist || "Unknown Artist",
+            cover: newCover,
+          };
+          return updated;
+        });
+      } else {
+        setPlaylistTracks(prev => {
+          const updated = [...prev];
+          updated[currTrack] = {
+            ...updated[currTrack],
+            title: data.common.title || "Unknown Title",
+            artist: data.common.artist || "Unknown Artist",
+            cover: newCover,
+          };
+          return updated;
+        });
+      }
+    }
+
+    loadMetadata();
+  }, [currTrack, playlistName, playlistTracks, allTracks.length]);
 
   useEffect(() => {
     if (playlistName === "Default") {
-      setPlaylistTracks(allTracks);
+      queueMicrotask(() => {
+        setPlaylistTracks(allTracks);
+      });
     }
   }, [allTracks]);
+
+
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center font-sans h-display
@@ -139,9 +262,13 @@ export default function Home() {
           allTracks={allTracks}
           playlistName={playlistName}
           playlistTracks={playlistTracks}
+          savedPlaylists={savedPlaylists}
+          loadPlaylist={loadPlaylist}
+          refreshPlaylists={refreshPlaylists}
           setPlaylistTracks={setPlaylistTracks}
           setCurrTrack={setCurrTrack}
           setPlaylistName={setPlaylistName}
+          setSavedPlaylists={setSavedPlaylists}
         />
 
         <Player 
@@ -167,6 +294,7 @@ export default function Home() {
 
           currTrack={currTrack} 
           setCurrTrack={setCurrTrack}
+          refreshPlaylists={refreshPlaylists}
         />
       </main>
     </div>
