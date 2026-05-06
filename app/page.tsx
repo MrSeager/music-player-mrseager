@@ -113,63 +113,6 @@ export default function Home() {
     loadDefaultMetadata();
   }, []); // runs once on mount
 
-  /*useEffect(() => {
-    async function loadMetadata() {
-      const activeTracks = playlistTracks.length > 0 ? playlistTracks : allTracks;
-      const track = activeTracks[currTrack];
-      if (!track) return;
-
-      let blob: Blob;
-
-      if (track.file) {
-        blob = track.file;
-      } else {
-        const res = await fetch(track.url);
-        blob = await res.blob();
-      }
-
-      const data = await parseBlob(blob);
-      setMetadata(data);
-
-      let newCover: string | null = null;
-
-      if (data.common.picture?.length) {
-        const pic = data.common.picture[0];
-        const base64 = Buffer.from(pic.data).toString("base64");
-        newCover = `data:${pic.format};base64,${base64}`;
-      }
-
-      setCoverImage(newCover);
-
-      // Update metadata in the correct track list
-      if (playlistTracks.length > 0) {
-        setPlaylistTracks(prev => {
-          const updated = [...prev];
-          updated[currTrack] = {
-            ...updated[currTrack],
-            title: data.common.title || "Unknown Title",
-            artist: data.common.artist || "Unknown Artist",
-            cover: newCover,
-          };
-          return updated;
-        });
-      } else {
-        setAllTracks(prev => {
-          const updated = [...prev];
-          updated[currTrack] = {
-            ...updated[currTrack],
-            title: data.common.title || "Unknown Title",
-            artist: data.common.artist || "Unknown Artist",
-            cover: newCover,
-          };
-          return updated;
-        });
-      }
-    }
-
-    loadMetadata();
-  }, [currTrack, playlistTracks, allTracks.length]);*/
-
   useEffect(() => {
     async function loadMetadata() {
       const activeTracks =
@@ -248,8 +191,6 @@ export default function Home() {
       });
     }
   }, [allTracks]);
-
-
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center font-sans h-display

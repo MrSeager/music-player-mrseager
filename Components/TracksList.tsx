@@ -59,10 +59,8 @@ export default function TracksList({
             const updated = prev.filter((_, i) => i !== index);
 
             if (updated.length === 0) {
-                setPlaylistTracks(allTracks);   // restore default playlist
-                setPlaylistName("Default");
                 setCurrTrack(0);
-                return allTracks;
+                return [];
             }
 
             // CASE 1: Deleted the currently playing track
@@ -94,25 +92,29 @@ export default function TracksList({
             return;
         }
 
-        const names = playlistTracks.map(t => t.file?.name || t.title);
-
         const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
 
+        // If playlist exists, ask user if they want to overwrite
         if (saved[playlistName]) {
-            alert("A playlist with this name already exists");
-            return;
+            const confirmOverwrite = confirm(
+                `Playlist "${playlistName}" already exists. Overwrite it?`
+            );
+
+            if (!confirmOverwrite) return;
         }
-        
-        saved [playlistName] = names;
+
+        const names = playlistTracks.map(t => t.file?.name || t.title);
+
+        saved[playlistName] = names;
 
         localStorage.setItem("playlists", JSON.stringify(saved));
         refreshPlaylists();
         alert("Playlist saved");
-    }
+    };
 
     return(
         <div className="p-2 overflow-hidden">
-            <div className="bg-[#212936ab] rounded-[15px] p-2 opacity-0 ease-out translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
+            <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-2 opacity-0 ease-out translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
                             group-hover:opacity-100 group-hover:translate-x-0">
                 <div className="w-full flex justify-between px-3">
                     <input 
@@ -160,8 +162,8 @@ export default function TracksList({
                     ) : (playlistTracks.map((track, index) => (
                         <div
                             key={index}
-                            className={`flex rounded duration-300 hover:scale-103
-                                        ${index === currTrack ? "bg-white/20" : "bg-white/5"}`}
+                            className={`flex rounded border duration-300 hover:scale-103
+                                        ${index === currTrack ? "bg-[#4D5562] drop-shadow-[0_0_5px_#C93B76] border-[#C93B76]" : "bg-[#121826a6] border-transparent"}`}
                         >
                             <button
                                 type="button"
@@ -189,8 +191,9 @@ export default function TracksList({
                                 type="button"
                                 title="remove track"
                                 onClick={() => handleRemoveTrack(index)}
-                                className="cursor-pointer aspect-1/1 text-[25px] rounded text-[#C93B76] duration-300
-                                            hover:drop-shadow-[0_0_5px_#C93B76] group/button"
+                                className={`cursor-pointer aspect-1/1 text-[25px] rounded text-[#C93B76] duration-300
+                                            hover:drop-shadow-[0_0_5px_#C93B76] group/button
+                                            ${playlistName === "Default" ? "hidden" : ""}`}
                             >
                                 <MdDeleteForever size={25} className="group-active/button:rotate-180 duration-200 mx-auto" />
                             </button>

@@ -90,5 +90,36 @@ body {
   border: none;
 }
 
+/*Tilting player*/
+.perspective-1000 {
+  perspective: 1000px;
+}
 
+.tilt-card {
+  position: relative;
+  overflow: hidden;
 
+  --shadow-x: 0px;
+  --shadow-y: 10px;
+  --shadow-blur: 30px;
+  --shadow-opacity: 0.35;
+
+  box-shadow: var(--shadow-x) var(--shadow-y) var(--shadow-blur)
+              rgba(0, 0, 0, var(--shadow-opacity));
+}
+
+.tilt-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.65) 0%,
+    rgba(255, 255, 255, 0.25) 20%,
+    rgba(255, 255, 255, 0.05) 40%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  opacity: var(--glare-opacity, 0);
+  transition: opacity 0.15s ease-out;
+}
