@@ -41,10 +41,12 @@ export default function Home() {
     const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
     const fileNames = saved[name] ?? [];
 
-    // Filter matching tracks
-    const matched = allTracks.filter(t =>
-      fileNames.includes(t.file?.name || t.title)
-    );
+    // Rebuild playlist in saved order
+    const matched = fileNames
+      .map((savedName: string) =>
+        allTracks.find(t => (t.file?.name || t.title) === savedName)
+      )
+      .filter(Boolean) as tracksProps[];
 
     if (matched.length === 0) {
       alert("This playlist has no available tracks. Switching to Default.");
@@ -111,7 +113,7 @@ export default function Home() {
     }
 
     loadDefaultMetadata();
-  }, []); // runs once on mount
+  }, []);
 
   useEffect(() => {
     async function loadMetadata() {
@@ -182,7 +184,7 @@ export default function Home() {
     }
 
     loadMetadata();
-  }, [currTrack, playlistName, playlistTracks, allTracks.length]);
+  }, [currTrack, playlistName]);
 
   useEffect(() => {
     if (playlistName === "Default") {

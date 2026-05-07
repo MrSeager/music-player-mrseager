@@ -9,6 +9,16 @@ export interface tracksProps {
   cover?: string | null;
 }
 
+export interface SortableTrackProps {
+    id: number;
+    index: number;
+    track: tracksProps;
+    currTrack: number;
+    playlistName: string;
+    handleRemoveTrack: (index: number) => void;
+    setCurrTrack: Dispatch<React.SetStateAction<number>>;
+}
+
 export interface PlayerProps {
     coverImage: string | null;
     metadata: IAudioMetadata | null;

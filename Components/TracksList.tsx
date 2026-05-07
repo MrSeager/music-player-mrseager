@@ -7,6 +7,24 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaSave } from "react-icons/fa";
 //Types
 import { tracksProps, TracksListProps } from "@/types/types";
+import type { DragEndEvent } from "@dnd-kit/core";
+
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors
+} from "@dnd-kit/core";
+
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    arrayMove
+} from "@dnd-kit/sortable";
+
+import SortableTrack from "./SortableTrack"; // we create this next
+
 
 export default function TracksList({ 
                                     allTracks, currTrack, playlistName, playlistTracks, refreshPlaylists,
@@ -112,6 +130,37 @@ export default function TracksList({
         alert("Playlist saved");
     };
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 5 }
+        })
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over) return;
+
+        const activeId = active.id as number;
+        const overId = over.id as number;
+
+        if (activeId !== overId) {
+            setPlaylistTracks(prev => {
+                const newOrder = arrayMove(prev, activeId, overId);
+
+                // Fix current track index
+                if (currTrack === activeId) {
+                    setCurrTrack(overId);
+                } else if (currTrack > activeId && currTrack <= overId) {
+                    setCurrTrack(currTrack - 1);
+                } else if (currTrack < activeId && currTrack >= overId) {
+                    setCurrTrack(currTrack + 1);
+                }
+
+                return newOrder;
+            });
+        }
+    };
+
     return(
         <div className="p-2 overflow-hidden">
             <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-2 opacity-0 ease-out translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
@@ -155,50 +204,29 @@ export default function TracksList({
                     </div>
                 </div>
                 <div className="w-full rounded-lg p-2 flex-1 overflow-y-auto flex flex-col gap-2">
-                    {playlistTracks.length === 0 ? (
-                        <p className="text-center text-[#E5E7EB]/60 py-4">
-                            No tracks in this playlist
-                        </p>
-                    ) : (playlistTracks.map((track, index) => (
-                        <div
-                            key={index}
-                            className={`flex rounded border duration-300 hover:scale-103
-                                        ${index === currTrack ? "bg-[#4D5562] drop-shadow-[0_0_5px_#C93B76] border-[#C93B76]" : "bg-[#121826a6] border-transparent"}`}
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={playlistTracks.map((_, i) => i)}
+                            strategy={verticalListSortingStrategy}
                         >
-                            <button
-                                type="button"
-                                className={`cursor-pointer w-full flex items-center gap-3 p-2`}
-                                onClick={() => setCurrTrack(index)}
-                            >
-                                <h3 className="font-semibold">{index + 1}.</h3>
-                                {/* Small cover */}
-                                <div className="relative w-12 h-12">
-                                    <Image
-                                    src={track.cover || "/images/cover-2.jpg"}
-                                    alt="cover"
-                                    fill
-                                    className="object-cover rounded"
-                                    />
-                                </div>
-
-                                {/* Titles */}
-                                <div className="flex flex-col text-start text-[#E5E7EB]">
-                                    <p className="text-sm font-semibold">{track.title || "Unknown Title"}</p>
-                                    <p className="text-xs opacity-70">{track.artist || "Unknown Artist"}</p>
-                                </div>
-                            </button>
-                            <button
-                                type="button"
-                                title="remove track"
-                                onClick={() => handleRemoveTrack(index)}
-                                className={`cursor-pointer aspect-1/1 text-[25px] rounded text-[#C93B76] duration-300
-                                            hover:drop-shadow-[0_0_5px_#C93B76] group/button
-                                            ${playlistName === "Default" ? "hidden" : ""}`}
-                            >
-                                <MdDeleteForever size={25} className="group-active/button:rotate-180 duration-200 mx-auto" />
-                            </button>
-                        </div>
-                    )))}
+                            {playlistTracks.map((track, index) => (
+                                <SortableTrack
+                                    key={index}
+                                    id={index}
+                                    index={index}
+                                    track={track}
+                                    currTrack={currTrack}
+                                    playlistName={playlistName}
+                                    handleRemoveTrack={handleRemoveTrack}
+                                    setCurrTrack={setCurrTrack}
+                                />
+                            ))}
+                        </SortableContext>
+                    </DndContext>
                 </div>
             </div>
         </div>

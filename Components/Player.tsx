@@ -16,6 +16,7 @@ export default function Player({
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [duration, setDuration] = useState<number>(0);
     const [transform, setTransform] = useState("scale(1)");
+    const [volume, setVolume] = useState<number>(1);
 
     const togglePlay = () => {
         const audio = audioRef.current;
@@ -121,6 +122,11 @@ export default function Player({
         }
     }, [isPlaying]);
 
+    //Volume control
+    useEffect(() => {
+        if (!audioRef.current) return;
+        audioRef.current.volume = volume;
+    }, [volume])
 
     return (
         <div className="flex items-center justify-center perspective-1000">
@@ -155,6 +161,8 @@ export default function Player({
                     changeTrack={changeTrack}
                     togglePlay={togglePlay}
                     isPlaying={isPlaying}
+                    volume={volume}
+                    setVolume={setVolume}
                 />
 
                 {/* Audio */}
