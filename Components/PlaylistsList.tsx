@@ -43,7 +43,7 @@ export default function PlaylistList({ allTracks, playlistName, playlistTracks, 
     return(
         <div className="p-2 overflow-hidden">
             <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-3 opacity-0 ease-out translate-x-[-200px] duration-500 w-full flex flex-col gap-2 h-full flex-1
-                            group-hover:opacity-100 group-hover:translate-x-0">
+                            group-hover:lg:opacity-100 group-hover:lg:translate-x-0">
                 <p>You need to load your tracks to make your playlist work</p>
                 <button
                     type="button"

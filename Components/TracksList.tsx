@@ -1,9 +1,11 @@
+"use client";
 //Components
+import { useState } from "react";
 import { parseBlob } from "music-metadata-browser";
 import Image from "next/image";
 //Icons
 import { HiDocumentAdd } from "react-icons/hi";
-import { MdDeleteForever } from "react-icons/md";
+import { MdAddCircleOutline } from "react-icons/md";
 import { FaSave } from "react-icons/fa";
 //Types
 import { tracksProps, TracksListProps } from "@/types/types";
@@ -30,6 +32,8 @@ export default function TracksList({
                                     allTracks, currTrack, playlistName, playlistTracks, refreshPlaylists,
                                     setAllTracks, setCurrTrack, setPlaylistName, setPlaylistTracks
                                 }: TracksListProps) {
+    const [openAddPanel, setOpenAddPanel] = useState<boolean>(false);
+                    
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files) return;
@@ -161,10 +165,27 @@ export default function TracksList({
         }
     };
 
+    //Adding tracks from allTracks
+    const isDuplicate = (track: tracksProps) => {
+        return playlistTracks.some(t => {
+            if (t.file && track.file) return t.file.name === track.file.name;
+            return t.title === track.title;
+        });
+    };
+
+    const availableTracks = allTracks.filter(t => !isDuplicate(t));
+
+    const handleAddFromDefault = (track: tracksProps) => {
+        if (isDuplicate(track)) return; // safety
+
+        setPlaylistTracks(prev => [...prev, track]);
+    };
+
+
     return(
         <div className="p-2 overflow-hidden">
             <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-2 opacity-0 ease-out translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
-                            group-hover:opacity-100 group-hover:translate-x-0">
+                            group-hover:lg:opacity-100 group-hover:lg:translate-x-0">
                 <div className="w-full flex justify-between px-3">
                     <input 
                         type="text"
@@ -227,6 +248,56 @@ export default function TracksList({
                             ))}
                         </SortableContext>
                     </DndContext>
+                    {playlistName !== "Default" ?
+                        <button
+                            type="button"
+                            title="add"
+                            onClick={() => setOpenAddPanel(true)}
+                            className="cursor-pointer rounded bg-[#121826a6] text-[#C93B76] font-bold text-[35px] duration-300 
+                                        hover:scale-103"
+                        >
+                            <MdAddCircleOutline size={35} className="mx-auto my-2" />
+                        </button>
+                        : ""
+                    }
+                </div>
+            </div>
+            <div 
+                onClick={() => setOpenAddPanel(false)} 
+                className={`ease-in-out fixed top-0 left-0 w-full overflow-hidden bg-[#2129368e] flex items-center justify-center duration-300
+                            ${openAddPanel ? 'h-full' : 'h-0 opacity-0'}`}
+            >
+                <div 
+                    onClick={(e) => e.stopPropagation()} 
+                    className={`top-15 grid grid-cols-2 max-w-[75%] h-screen overflow-y-scroll  bg-[#4d5562d1] p-3 rounded-xl gap-3`}
+                >
+                    {availableTracks.length === 0 ? (
+                        <p className="col-span-2 text-center text-[#E5E7EB] py-5 opacity-80">
+                            No tracks available to add
+                        </p>
+                    ) : (availableTracks.map((track, index) => (
+                        <button
+                            type="button"
+                            key={index}
+                            onClick={() => handleAddFromDefault(track)}
+                            className="cursor-pointer flex items-center duration-300 gap-3 justify-between rounded bg-[#212936] px-2 py-1
+                                        hover:scale-102 hover:drop-shadow-[0_0_5px_#C93B76]"
+                        >
+                            <div className="relative w-12 h-12">
+                                <Image
+                                    src={track.cover || "/images/cover-2.jpg"}
+                                    alt="cover"
+                                    fill
+                                    className="object-cover rounded"
+                                />
+                            </div>
+                            <div className="text-[#E5E7EB] text-start w-full flex flex-col items-start">
+                                <p className="text-sm font-semibold">{track.title}</p>
+                                <p className="text-xs opacity-70">{track.artist}</p>
+                            </div>
+                            <MdAddCircleOutline size={35} />
+                        </button>
+                    )))}
                 </div>
             </div>
         </div>

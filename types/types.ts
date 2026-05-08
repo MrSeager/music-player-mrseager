@@ -26,6 +26,7 @@ export interface PlayerProps {
     currTrack: number;
     tracks: tracksProps[];
     isPlaying: boolean;
+    setupEqualizer: () => void;
     setIsPlaying: Dispatch<React.SetStateAction<boolean>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
 }

@@ -25,6 +25,36 @@ export default function Home() {
   const [playlistName, setPlaylistName] = useState<string>("Default");
   const [savedPlaylists, setSavedPlaylists] = useState<string[]>([]);
 
+  const [audioLevel, setAudioLevel] = useState(0);
+  const eqInitialized = useRef<boolean>(false);
+
+  //Equalizer
+  const setupEqualizer = () => {
+    if (eqInitialized.current) return;   // <-- prevents duplicates
+    if (!audioRef.current) return;
+
+    eqInitialized.current = true;        // <-- lock it
+
+    const audioCtx = new AudioContext();
+    const source = audioCtx.createMediaElementSource(audioRef.current);
+    const analyser = audioCtx.createAnalyser();
+
+    analyser.fftSize = 256;
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    const tick = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        setAudioLevel(avg / 255);
+        requestAnimationFrame(tick);
+    };
+
+    tick();
+  };
+
   const refreshPlaylists = () => {
       const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
       setSavedPlaylists(Object.keys(saved));
@@ -194,12 +224,22 @@ export default function Home() {
     }
   }, [allTracks]);
 
+  useEffect(() => {
+    if (isPlaying) {
+        setupEqualizer();
+    }
+  }, [isPlaying]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center font-sans h-display
+    <div 
+        className="blob text-[#E5E7EB] flex flex-col flex-1 items-center justify-center font-sans h-display
                     bg-gradient-to-r from-[#4c3346] via-[#422e53] to-[#28355c]
-                    bg-[length:200%_200%]
-                    animate-[gradient-move_8s_ease_infinite]">
-      <main className="group grid grid-cols-3 w-full max-w-[120rem] h-screen">
+                    bg-[length:200%_200%]"
+        style={{
+            animation: `gradient-move ${8 - audioLevel * 6}s ease infinite`
+        }}              
+      >
+      <main className="group grid lg:grid-cols-3 w-full max-w-[120rem] lg:h-screen">
 
         <PlaylistList 
           allTracks={allTracks}
@@ -221,6 +261,7 @@ export default function Home() {
           currTrack={currTrack} 
           tracks={playlistTracks.length > 0 ? playlistTracks : allTracks} 
           isPlaying={isPlaying}
+          setupEqualizer={setupEqualizer}
           setIsPlaying={setIsPlaying} 
           setCurrTrack={setCurrTrack}
         />

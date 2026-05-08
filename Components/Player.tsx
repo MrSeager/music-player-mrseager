@@ -11,7 +11,7 @@ import { PlayerProps } from "@/types/types";
 
 export default function Player({ 
                                     coverImage, metadata, audioRef, currTrack, tracks, isPlaying,
-                                    setIsPlaying, setCurrTrack 
+                                    setupEqualizer, setIsPlaying, setCurrTrack 
                                 }: PlayerProps) {
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [duration, setDuration] = useState<number>(0);
@@ -23,10 +23,11 @@ export default function Player({
         if (!audio) return;
 
         if (audio.paused) {
-        audio.play();
+            audio.play();
             setIsPlaying(true);
+            setupEqualizer();   // <-- correct place
         } else {
-        audio.pause();
+            audio.pause();
             setIsPlaying(false);
         }
     };

@@ -69,7 +69,7 @@ export default function SortableTrack({
                         type="button"
                         title="remove track"
                         onClick={() => handleRemoveTrack(index)}
-                        className="cursor-pointer px-5 aspect-1/1 text-[25px] rounded text-[#C93B76] duration-300 hover:drop-shadow-[0_0_5px_#C93B76]"
+                        className="cursor-pointer px-4 aspect-1/1 text-[25px] rounded text-[#C93B76] duration-300 hover:drop-shadow-[0_0_5px_#C93B76]"
                     >
                         <MdDeleteForever size={25} className="mx-auto" />
                     </button>
