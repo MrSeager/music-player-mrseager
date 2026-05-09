@@ -7,9 +7,13 @@ import Image from "next/image";
 import { HiDocumentAdd } from "react-icons/hi";
 import { MdAddCircleOutline } from "react-icons/md";
 import { FaSave } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
+import { IoCloseSharp } from "react-icons/io5";
 //Types
 import { tracksProps, TracksListProps } from "@/types/types";
 import type { DragEndEvent } from "@dnd-kit/core";
+//DndContext
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 import {
     DndContext,
@@ -29,8 +33,9 @@ import SortableTrack from "./SortableTrack"; // we create this next
 
 
 export default function TracksList({ 
-                                    allTracks, currTrack, playlistName, playlistTracks, refreshPlaylists,
-                                    setAllTracks, setCurrTrack, setPlaylistName, setPlaylistTracks
+                                    allTracks, currTrack, playlistName, playlistTracks, openMenu,
+                                    refreshPlaylists,
+                                    setAllTracks, setCurrTrack, setPlaylistName, setPlaylistTracks, setOpenMenu
                                 }: TracksListProps) {
     const [openAddPanel, setOpenAddPanel] = useState<boolean>(false);
                     
@@ -183,9 +188,28 @@ export default function TracksList({
 
 
     return(
-        <div className="p-2 overflow-hidden">
-            <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-2 opacity-0 ease-out translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
+        <div className={`absolute right-0 top-0 lg:w-full lg:static lg:p-2 overflow-hidden duration-300 h-full z-100 bg-[#212936ab] lg:bg-transparent
+                        ${openMenu === "tracks" ? "w-full p-2" : "w-0 p-0"}`}>
+            <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-2 lg:opacity-0 ease-out lg:translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
                             group-hover:lg:opacity-100 group-hover:lg:translate-x-0">
+                <div className="flex justify-between text-[#C93B76] lg:hidden w-full">
+                    <button
+                        type="button"
+                        title="track list"
+                        className="cursor-pointer flex items-center gap-5 border border-3 px-3 font-semibold"
+                        onClick={() => setOpenMenu("playlists")}
+                    >
+                        <FaArrowLeft /> Playlists
+                    </button>
+                    <button
+                        type="button"
+                        title="close"
+                        className="cursor-pointer border border-3 px-3"
+                        onClick={() => setOpenMenu("none")}
+                    >
+                        <IoCloseSharp size={25} />
+                    </button>
+                </div>
                 <div className="w-full flex justify-between px-3">
                     <input 
                         type="text"
@@ -224,11 +248,12 @@ export default function TracksList({
                         </button>
                     </div>
                 </div>
-                <div className="w-full rounded-lg p-2 flex-1 overflow-y-auto flex flex-col gap-2">
+                <div className="w-full rounded-lg p-2 flex-1 overflow-x-hidden overflow-y-auto flex flex-col gap-2">
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
+                        modifiers={[restrictToVerticalAxis]}
                     >
                         <SortableContext
                             items={playlistTracks.map((_, i) => i)}
@@ -269,8 +294,16 @@ export default function TracksList({
             >
                 <div 
                     onClick={(e) => e.stopPropagation()} 
-                    className={`top-15 grid grid-cols-2 max-w-[75%] h-screen overflow-y-scroll  bg-[#4d5562d1] p-3 rounded-xl gap-3`}
+                    className={`top-15 grid grid-cols-2 w-full lg:max-w-[75%] max-h-screen overflow-y-auto  bg-[#4d5562d1] p-3 rounded-xl gap-3`}
                 >
+                    <button
+                        type="button"
+                        title="close"
+                        className="cursor-pointer border border-3 px-3 flex items-center justify-center text-[#C93B76] lg:hidden"
+                        onClick={() => setOpenAddPanel(false)}
+                    >
+                        <IoCloseSharp size={25} />
+                    </button>
                     {availableTracks.length === 0 ? (
                         <p className="col-span-2 text-center text-[#E5E7EB] py-5 opacity-80">
                             No tracks available to add

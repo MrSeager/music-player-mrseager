@@ -5,10 +5,12 @@ import { useState, useEffect } from "react";
 import { PlaylistListProps } from "@/types/types";
 //Icons
 import { MdDeleteForever } from "react-icons/md";
+import { FaArrowRight } from "react-icons/fa";
+import { IoCloseSharp } from "react-icons/io5";
 
-export default function PlaylistList({ allTracks, playlistName, playlistTracks, savedPlaylists, 
+export default function PlaylistList({ allTracks, playlistName, playlistTracks, savedPlaylists, openMenu,
                                         refreshPlaylists, loadPlaylist,
-                                        setPlaylistTracks, setCurrTrack, setPlaylistName, setSavedPlaylists }: PlaylistListProps) {
+                                        setPlaylistTracks, setCurrTrack, setPlaylistName, setSavedPlaylists, setOpenMenu }: PlaylistListProps) {
 
 
     const deletePlaylist = (name: string) => {
@@ -41,9 +43,28 @@ export default function PlaylistList({ allTracks, playlistName, playlistTracks, 
     }, [setSavedPlaylists]);
     
     return(
-        <div className="p-2 overflow-hidden">
-            <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-3 opacity-0 ease-out translate-x-[-200px] duration-500 w-full flex flex-col gap-2 h-full flex-1
+        <div className={`absolute lg:w-full lg:static lg:p-2 overflow-hidden duration-300 h-full z-100 bg-[#212936ab] lg:bg-transparent
+                        ${openMenu === "playlists" ? "w-full p-2" : "w-0 p-0"}`}>
+            <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-3 lg:opacity-0 ease-out lg:translate-x-[-200px] duration-500 w-full flex flex-col gap-2 h-full flex-1
                             group-hover:lg:opacity-100 group-hover:lg:translate-x-0">
+                <div className="flex justify-between text-[#C93B76] lg:hidden">
+                    <button
+                        type="button"
+                        title="close"
+                        className="cursor-pointer border border-3 px-3"
+                        onClick={() => setOpenMenu("none")}
+                    >
+                        <IoCloseSharp size={25} />
+                    </button>
+                    <button
+                        type="button"
+                        title="track list"
+                        className="cursor-pointer flex items-center gap-5 border border-3 px-3 font-semibold"
+                        onClick={() => setOpenMenu("tracks")}
+                    >
+                        Tracks list <FaArrowRight />
+                    </button>
+                </div>
                 <p>You need to load your tracks to make your playlist work</p>
                 <button
                     type="button"

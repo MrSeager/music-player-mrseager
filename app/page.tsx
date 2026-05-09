@@ -28,6 +28,9 @@ export default function Home() {
   const [audioLevel, setAudioLevel] = useState(0);
   const eqInitialized = useRef<boolean>(false);
 
+  //For mobile version 
+  const [openMenu, setOpenMenu] = useState<"none" | "playlists" | "tracks">("none");
+
   //Equalizer
   const setupEqualizer = () => {
     if (eqInitialized.current) return;   // <-- prevents duplicates
@@ -239,31 +242,41 @@ export default function Home() {
             animation: `gradient-move ${8 - audioLevel * 6}s ease infinite`
         }}              
       >
-      <main className="group grid lg:grid-cols-3 w-full max-w-[120rem] lg:h-screen">
+      <main className="relative group lg:grid grid-cols-3 w-full max-w-[120rem] h-screen">
 
         <PlaylistList 
           allTracks={allTracks}
+
           playlistName={playlistName}
+
           playlistTracks={playlistTracks}
+          setPlaylistName={setPlaylistName}
+
           savedPlaylists={savedPlaylists}
+          setSavedPlaylists={setSavedPlaylists}
+
+          openMenu={openMenu}
+          setOpenMenu={setOpenMenu}
+
           loadPlaylist={loadPlaylist}
           refreshPlaylists={refreshPlaylists}
           setPlaylistTracks={setPlaylistTracks}
           setCurrTrack={setCurrTrack}
-          setPlaylistName={setPlaylistName}
-          setSavedPlaylists={setSavedPlaylists}
         />
 
-        <Player 
+        <Player  
+          isPlaying={isPlaying}
+          setIsPlaying={setIsPlaying} 
+          
+          currTrack={currTrack} 
+          setCurrTrack={setCurrTrack}
+
           coverImage={coverImage} 
           metadata={metadata}
           audioRef={audioRef} 
-          currTrack={currTrack} 
-          tracks={playlistTracks.length > 0 ? playlistTracks : allTracks} 
-          isPlaying={isPlaying}
+          tracks={playlistTracks.length > 0 ? playlistTracks : allTracks}
           setupEqualizer={setupEqualizer}
-          setIsPlaying={setIsPlaying} 
-          setCurrTrack={setCurrTrack}
+          setOpenMenu={setOpenMenu}
         />
         
         <TracksList 
@@ -279,6 +292,9 @@ export default function Home() {
           currTrack={currTrack} 
           setCurrTrack={setCurrTrack}
           refreshPlaylists={refreshPlaylists}
+
+          openMenu={openMenu} 
+          setOpenMenu={setOpenMenu}
         />
       </main>
     </div>

@@ -5,13 +5,15 @@ import Image from "next/image";
 import Controls from "@/Components/Controls";
 import ProgressBar from "@/Components/ProgressBar";
 import Titles from "@/Components/Titles";
+//Icons
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 //Types
 import { PlayerProps } from "@/types/types";
 
 
 export default function Player({ 
                                     coverImage, metadata, audioRef, currTrack, tracks, isPlaying,
-                                    setupEqualizer, setIsPlaying, setCurrTrack 
+                                    setupEqualizer, setIsPlaying, setCurrTrack, setOpenMenu
                                 }: PlayerProps) {
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [duration, setDuration] = useState<number>(0);
@@ -130,12 +132,28 @@ export default function Player({
     }, [volume])
 
     return (
-        <div className="flex items-center justify-center perspective-1000">
+        <div className="flex flex-col perspective-1000 h-full">
+            <div className="lg:hidden w-full mt-5 px-5 flex justify-between self-start">
+                <button
+                    type="button"
+                    onClick={() => setOpenMenu("playlists")}
+                    className="rounded bg-[#C93B76] px-3 py-2 font-semibold flex items-center gap-3"
+                >
+                    <FaArrowLeft /> Playlists
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setOpenMenu("tracks")}
+                    className="rounded bg-[#C93B76] px-3 py-2 font-semibold flex items-center gap-3"
+                >
+                    Traks <FaArrowRight />
+                </button>
+            </div>
             <div
                 onMouseMove={handleMove}
                 onMouseLeave={handleLeave}
                 style={{ transform }}
-                className={`tilt-card duration-200 ease-out aspect-4/6 w-[22rem] bg-[#212936ab] p-5 rounded-[15px] flex flex-col items-center justify-between`}
+                className={`self-center my-auto tilt-card duration-200 ease-out aspect-4/6 w-[22rem] bg-[#212936ab] p-5 rounded-[15px] flex flex-col items-center justify-between`}
             >
                 
                 {/* Cover */}

@@ -29,6 +29,7 @@ export interface PlayerProps {
     setupEqualizer: () => void;
     setIsPlaying: Dispatch<React.SetStateAction<boolean>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
+    setOpenMenu: (openMenu: "none" | "playlists" | "tracks") => void;
 }
 
 export interface TracksListProps {
@@ -36,11 +37,13 @@ export interface TracksListProps {
     currTrack: number;
     playlistName: string;
     playlistTracks: tracksProps[];
+    openMenu: "none" | "playlists" | "tracks";
     refreshPlaylists: () => void;
     setAllTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
     setPlaylistName: (playlistName: string) => void;
     setPlaylistTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
+    setOpenMenu: (openMenu: "none" | "playlists" | "tracks") => void;
 }
 
 export interface PlaylistListProps {
@@ -48,10 +51,12 @@ export interface PlaylistListProps {
     playlistName: string; 
     playlistTracks: tracksProps[];
     savedPlaylists: string[];
+    openMenu: "none" | "playlists" | "tracks";
     refreshPlaylists: () => void;
     loadPlaylist: (name: string) => void;
     setPlaylistTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
     setPlaylistName: (playlistName: string) => void;
     setSavedPlaylists: (savedPlaylists: string[]) => void;
+    setOpenMenu: (openMenu: "none" | "playlists" | "tracks") => void;
 }
