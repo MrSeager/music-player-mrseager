@@ -1,6 +1,6 @@
 "use client";
 //Components
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { parseBlob } from "music-metadata-browser";
 import Image from "next/image";
 //Icons
@@ -34,52 +34,12 @@ import SortableTrack from "./SortableTrack"; // we create this next
 
 export default function TracksList({ 
                                     allTracks, currTrack, playlistName, playlistTracks, openMenu,
-                                    refreshPlaylists,
+                                    refreshPlaylists, handleFileUpload,
                                     setAllTracks, setCurrTrack, setPlaylistName, setPlaylistTracks, setOpenMenu
                                 }: TracksListProps) {
     const [openAddPanel, setOpenAddPanel] = useState<boolean>(false);
-                    
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
 
-        const fileArray = Array.from(files);
 
-        const newTracks: tracksProps[] = [];
-
-        for (const file of fileArray) {
-            // Parse metadata directly from the File
-            const data = await parseBlob(file);
-
-            let newCover: string | null = null;
-
-            if (data.common.picture?.length) {
-                const pic = data.common.picture[0];
-                const base64 = Buffer.from(pic.data).toString("base64");
-                newCover = `data:${pic.format};base64,${base64}`;
-            }
-
-            newTracks.push({
-                url: URL.createObjectURL(file),
-                file,
-                title: data.common.title || file.name,
-                artist: data.common.artist || "Unknown Artist",
-                cover: newCover,
-            });
-        }
-
-        //setAllTracks(prev => [...prev, ...newTracks]);
-        setAllTracks(prev => {
-            const updated = [...prev, ...newTracks];
-
-            // If default playlist is active → add new tracks to playlistTracks too
-            if (playlistName === "Default") {
-                setPlaylistTracks(updated);
-            }
-
-            return updated;
-        });
-    };
 
     const handleRemoveTrack = (index: number) => {
         setPlaylistTracks(prev => {

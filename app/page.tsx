@@ -6,7 +6,7 @@ import Player from "@/Components/Player";
 import TracksList from "@/Components/TracksList";
 import PlaylistList from "@/Components/PlaylistsList";
 //Types
-import { tracksProps } from "@/types/types";
+import { tracksProps, UploadEvent } from "@/types/types";
 
 export default function Home() {
   const [currTrack, setCurrTrack] = useState<number>(0);
@@ -30,6 +30,58 @@ export default function Home() {
 
   //For mobile version 
   const [openMenu, setOpenMenu] = useState<"none" | "playlists" | "tracks">("none");
+  
+  //For drag-n-drop
+  const [dragActive, setDragActive] = useState<boolean>(false);
+  const dragCounter = useRef<number>(0);
+
+  //Uploading tracks
+  const handleFileUpload = async (e: UploadEvent) => {
+    const fileList = e.target.files;
+
+    if (!fileList) return;
+
+    const files = Array.from(fileList);
+
+    if (!files) return;
+
+    const fileArray = Array.from(files);
+
+    const newTracks: tracksProps[] = [];
+
+    for (const file of fileArray) {
+      // Parse metadata directly from the File
+      const data = await parseBlob(file);
+
+      let newCover: string | null = null;
+
+      if (data.common.picture?.length) {
+          const pic = data.common.picture[0];
+          const base64 = Buffer.from(pic.data).toString("base64");
+          newCover = `data:${pic.format};base64,${base64}`;
+      }
+
+      newTracks.push({
+          url: URL.createObjectURL(file),
+          file,
+          title: data.common.title || file.name,
+          artist: data.common.artist || "Unknown Artist",
+          cover: newCover,
+      });
+    }
+
+    //setAllTracks(prev => [...prev, ...newTracks]);
+    setAllTracks(prev => {
+        const updated = [...prev, ...newTracks];
+
+        // If default playlist is active → add new tracks to playlistTracks too
+        if (playlistName === "Default") {
+            setPlaylistTracks(updated);
+        }
+
+        return updated;
+    });
+  };
 
   //Equalizer
   const setupEqualizer = () => {
@@ -233,6 +285,53 @@ export default function Home() {
     }
   }, [isPlaying]);
 
+  //For drag-n-drop
+  useEffect(() => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current += 1;
+      setDragActive(true);
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current -= 1;
+      if (dragCounter.current === 0) setDragActive(false);
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current = 0;
+      setDragActive(false);
+
+      if (!e.dataTransfer) return;
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        handleFileUpload({ target: { files } });
+      }
+    };
+
+    window.addEventListener("dragenter", handleDragEnter);
+    window.addEventListener("dragleave", handleDragLeave);
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("drop", handleDrop);
+
+    return () => {
+      window.removeEventListener("dragenter", handleDragEnter);
+      window.removeEventListener("dragleave", handleDragLeave);
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("drop", handleDrop);
+    };
+  }, []);
+
   return (
     <div 
         className="blob text-[#E5E7EB] flex flex-col flex-1 items-center justify-center font-sans h-display
@@ -243,7 +342,6 @@ export default function Home() {
         }}              
       >
       <main className="relative group lg:grid grid-cols-3 w-full max-w-[120rem] h-screen">
-
         <PlaylistList 
           allTracks={allTracks}
 
@@ -292,10 +390,21 @@ export default function Home() {
           currTrack={currTrack} 
           setCurrTrack={setCurrTrack}
           refreshPlaylists={refreshPlaylists}
+          handleFileUpload={handleFileUpload}
 
           openMenu={openMenu} 
           setOpenMenu={setOpenMenu}
         />
+
+        {dragActive && (
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center 
+                      bg-black/60 border-4 border-dashed border-[#C93B76] 
+                      text-[#E5E7EB] text-3xl pointer-events-auto"
+          >
+            Drop audio files here
+          </div>
+        )}
       </main>
     </div>
   );

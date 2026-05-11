@@ -1,6 +1,10 @@
 import { RefObject, Dispatch } from "react";
 import { IAudioMetadata } from "music-metadata-browser";
 
+export type UploadEvent =
+  | React.ChangeEvent<HTMLInputElement>
+  | { target: { files: File[] } };
+
 export interface tracksProps {
   url: string;
   file?: File;
@@ -39,6 +43,7 @@ export interface TracksListProps {
     playlistTracks: tracksProps[];
     openMenu: "none" | "playlists" | "tracks";
     refreshPlaylists: () => void;
+    handleFileUpload: (e: UploadEvent) => void;
     setAllTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
     setPlaylistName: (playlistName: string) => void;
