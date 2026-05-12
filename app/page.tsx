@@ -5,6 +5,7 @@ import { parseBlob, IAudioMetadata } from "music-metadata-browser";
 import Player from "@/Components/Player";
 import TracksList from "@/Components/TracksList";
 import PlaylistList from "@/Components/PlaylistsList";
+import toast from "react-hot-toast";
 //Types
 import { tracksProps, UploadEvent } from "@/types/types";
 
@@ -134,7 +135,15 @@ export default function Home() {
       .filter(Boolean) as tracksProps[];
 
     if (matched.length === 0) {
-      alert("This playlist has no available tracks. Switching to Default.");
+      toast.error("This playlist has no available tracks. Switching to Default.", {
+          style: {
+              background: "#212936",
+              color: "#E5E7EB",
+              padding: "12px 16px",
+              borderRadius: "8px",
+              textAlign: "center",
+          },
+      });
 
       setPlaylistName("Default");
       setPlaylistTracks(allTracks);
@@ -156,9 +165,18 @@ export default function Home() {
 
     // If some tracks were missing → notify user
     if (missing.length > 0) {
-      alert(
-          `Some tracks were not loaded because they were not uploaded:\n\n` +
-          missing.join("\n")
+      toast.error(
+        `Some tracks were not loaded:\n\n${missing.join("\n")}`,
+        {
+          duration: 5000,
+          style: {
+            whiteSpace: "pre-line",
+            background: "#212936",
+            color: "#E5E7EB",
+            padding: "12px 16px",
+            borderRadius: "8px",
+          },
+        }
       );
     }
   };
@@ -347,7 +365,6 @@ export default function Home() {
 
           playlistName={playlistName}
 
-          playlistTracks={playlistTracks}
           setPlaylistName={setPlaylistName}
 
           savedPlaylists={savedPlaylists}
@@ -378,8 +395,7 @@ export default function Home() {
         />
         
         <TracksList 
-          allTracks={allTracks} 
-          setAllTracks={setAllTracks} 
+          allTracks={allTracks}
 
           playlistName={playlistName}
           setPlaylistName={setPlaylistName}

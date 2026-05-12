@@ -137,14 +137,14 @@ export default function Player({
                 <button
                     type="button"
                     onClick={() => setOpenMenu("playlists")}
-                    className="rounded bg-[#C93B76] px-3 py-2 font-semibold flex items-center gap-3"
+                    className="cursor-pointer rounded bg-[#C93B76] px-3 py-2 font-semibold flex items-center gap-3"
                 >
                     <FaArrowLeft /> Playlists
                 </button>
                 <button
                     type="button"
                     onClick={() => setOpenMenu("tracks")}
-                    className="rounded bg-[#C93B76] px-3 py-2 font-semibold flex items-center gap-3"
+                    className="cursor-pointer rounded bg-[#C93B76] px-3 py-2 font-semibold flex items-center gap-3"
                 >
                     Traks <FaArrowRight />
                 </button>
@@ -162,7 +162,7 @@ export default function Player({
                         src={coverImage || '/images/cover-1.jpg'}
                         alt="cover image"
                         fill
-                        className="rounded-[15px] object-cover"
+                        className="rounded-[15px] object-cover pointer-events-none select-none"
                     />
                 </div>
                 

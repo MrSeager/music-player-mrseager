@@ -1,8 +1,9 @@
 "use client";
 //Components
-import { useState, useRef } from "react";
-import { parseBlob } from "music-metadata-browser";
+import { useState } from "react";
 import Image from "next/image";
+import toast from "react-hot-toast";
+import { confirmToast } from "./ConfirmToast";
 //Icons
 import { HiDocumentAdd } from "react-icons/hi";
 import { MdAddCircleOutline } from "react-icons/md";
@@ -29,17 +30,15 @@ import {
     arrayMove
 } from "@dnd-kit/sortable";
 
-import SortableTrack from "./SortableTrack"; // we create this next
+import SortableTrack from "./SortableTrack";
 
 
 export default function TracksList({ 
                                     allTracks, currTrack, playlistName, playlistTracks, openMenu,
                                     refreshPlaylists, handleFileUpload,
-                                    setAllTracks, setCurrTrack, setPlaylistName, setPlaylistTracks, setOpenMenu
+                                    setCurrTrack, setPlaylistName, setPlaylistTracks, setOpenMenu
                                 }: TracksListProps) {
     const [openAddPanel, setOpenAddPanel] = useState<boolean>(false);
-
-
 
     const handleRemoveTrack = (index: number) => {
         setPlaylistTracks(prev => {
@@ -70,33 +69,64 @@ export default function TracksList({
 
     const handleSavePlaylist = () => {
         if (!playlistName.trim()) {
-            alert("Enter playlist name");
+            toast.error("Enter playlist name", {
+                style: {
+                    background: "#212936",
+                    color: "#E5E7EB",
+                    padding: "12px 16px",
+                    borderRadius: "8px",
+                    textAlign: "center",
+                },
+            });
             return;
         }
 
         if (playlistName === "Default") {
-            alert("You cannot save a playlist named 'Default'");
+            toast.error("You cannot save a playlist named 'Default'", {
+                style: {
+                    background: "#212936",
+                    color: "#E5E7EB",
+                    padding: "12px 16px",
+                    borderRadius: "8px",
+                    textAlign: "center",
+                },
+            });
             return;
         }
 
         const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
 
-        // If playlist exists, ask user if they want to overwrite
+        // If playlist exists → show confirm toast
         if (saved[playlistName]) {
-            const confirmOverwrite = confirm(
-                `Playlist "${playlistName}" already exists. Overwrite it?`
+            confirmToast(
+            `Playlist "${playlistName}" already exists. Overwrite it?`,
+                () => savePlaylist()
             );
-
-            if (!confirmOverwrite) return;
+            return;
         }
 
+        savePlaylist();
+    };
+
+    const savePlaylist = () => {
+        const saved = JSON.parse(localStorage.getItem("playlists") || "{}");
         const names = playlistTracks.map(t => t.file?.name || t.title);
 
         saved[playlistName] = names;
 
         localStorage.setItem("playlists", JSON.stringify(saved));
         refreshPlaylists();
-        alert("Playlist saved");
+
+        toast.success("Playlist saved", { 
+            duration: 2000,
+            style: {
+                    background: "#212936",
+                    color: "#E5E7EB",
+                    padding: "12px 16px",
+                    borderRadius: "8px",
+                    textAlign: "center",
+                }
+        });
     };
 
     const sensors = useSensors(
@@ -150,7 +180,7 @@ export default function TracksList({
     return(
         <div className={`absolute right-0 top-0 lg:w-full lg:static lg:p-2 overflow-hidden duration-300 h-full z-100 bg-[#212936ab] lg:bg-transparent
                         ${openMenu === "tracks" ? "w-full p-2" : "w-0 p-0"}`}>
-            <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-2 lg:opacity-0 ease-out lg:translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
+            <div className="shadow-xl bg-[#212936ab] rounded-[15px] p-3 lg:opacity-0 ease-out lg:translate-x-[200px] duration-500 w-full flex flex-col items-end gap-2 h-full flex-1
                             group-hover:lg:opacity-100 group-hover:lg:translate-x-0">
                 <div className="flex justify-between text-[#C93B76] lg:hidden w-full">
                     <button
@@ -208,7 +238,7 @@ export default function TracksList({
                         </button>
                     </div>
                 </div>
-                <div className="w-full rounded-lg p-2 flex-1 overflow-x-hidden overflow-y-auto flex flex-col gap-2">
+                <div className="w-full rounded-lg p-2 flex-1 overflow-x-hidden overflow-y-auto flex flex-col gap-2 custom-scrollbar">
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}

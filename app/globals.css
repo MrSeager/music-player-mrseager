@@ -116,3 +116,47 @@ body {
   opacity: var(--glare-opacity, 0);
   transition: opacity 0.15s ease-out;
 }
+
+/* RIGHT SCROLLBAR */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1a1f2e;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #C93B76;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #e04c8a;
+}
+
+/* LEFT SCROLLBAR WRAPPER */
+.scroll-left {
+  direction: rtl !important;
+}
+
+.scroll-left > * {
+  direction: ltr; /* restore normal content direction */
+}
+
+/*Toast animation*/
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-in {
+  animation: toast-in 0.25s ease-out;
+}

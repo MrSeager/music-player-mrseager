@@ -44,7 +44,6 @@ export interface TracksListProps {
     openMenu: "none" | "playlists" | "tracks";
     refreshPlaylists: () => void;
     handleFileUpload: (e: UploadEvent) => void;
-    setAllTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
     setCurrTrack: Dispatch<React.SetStateAction<number>>;
     setPlaylistName: (playlistName: string) => void;
     setPlaylistTracks: Dispatch<React.SetStateAction<tracksProps[]>>;
@@ -53,8 +52,7 @@ export interface TracksListProps {
 
 export interface PlaylistListProps {
     allTracks: tracksProps[];
-    playlistName: string; 
-    playlistTracks: tracksProps[];
+    playlistName: string;
     savedPlaylists: string[];
     openMenu: "none" | "playlists" | "tracks";
     refreshPlaylists: () => void;

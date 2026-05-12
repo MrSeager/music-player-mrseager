@@ -1,6 +1,6 @@
 "use client";
 //Components
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 //Types
 import { PlaylistListProps } from "@/types/types";
 //Icons
@@ -8,10 +8,9 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaArrowRight } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
 
-export default function PlaylistList({ allTracks, playlistName, playlistTracks, savedPlaylists, openMenu,
+export default function PlaylistList({ allTracks, playlistName, savedPlaylists, openMenu,
                                         refreshPlaylists, loadPlaylist,
                                         setPlaylistTracks, setCurrTrack, setPlaylistName, setSavedPlaylists, setOpenMenu }: PlaylistListProps) {
-
 
     const deletePlaylist = (name: string) => {
         if (name === "Default") {
@@ -65,47 +64,49 @@ export default function PlaylistList({ allTracks, playlistName, playlistTracks, 
                         Tracks list <FaArrowRight />
                     </button>
                 </div>
-                <p>You need to load your tracks to make your playlist work</p>
-                <button
-                    type="button"
-                    onClick={() => loadPlaylist("Default")}
-                    className={`cursor-pointer flex rounded duration-300 p-2 hover:scale-103
-                                ${playlistName === "Default" ? "bg-[#4D5562] drop-shadow-[0_0_5px_#C93B76] border-[#C93B76]" : "bg-[#121826a6] border-transparent"}`}
-                >
-                    All loaded tracks
-                </button>
-
-                {/* Saved playlists */}
-                {savedPlaylists.length === 0 && (
-                    <p className="text-sm text-[#E5E7EB]/60">
-                        No playlists saved yet
-                    </p>
-                )}
-
-                {savedPlaylists.map(name => (
-                    <div
-                        key={name}
-                        className={`border flex rounded duration-300 hover:scale-103
-                                    ${name === playlistName ? "bg-[#4D5562] drop-shadow-[0_0_5px_#C93B76] border-[#C93B76]" : "bg-[#121826a6] border-transparent"}`}
+                <p className="select-none text-center">You need to load your tracks to make your playlist work</p>
+                <div className="w-full rounded-lg p-2 flex-1 overflow-x-hidden overflow-y-auto flex flex-col gap-2 scroll-left custom-scrollbar">
+                    <button
+                        type="button"
+                        onClick={() => loadPlaylist("Default")}
+                        className={`cursor-pointer flex rounded duration-300 p-2 hover:scale-103
+                                    ${playlistName === "Default" ? "bg-[#4D5562] drop-shadow-[0_0_5px_#C93B76] border-[#C93B76]" : "bg-[#121826a6] border-transparent"}`}
                     >
-                        <button
-                            type="button"
-                            onClick={() => loadPlaylist(name)}
-                            className="cursor-pointer w-full flex items-center gap-3 p-2"
+                        All loaded tracks
+                    </button>
+
+                    {/* Saved playlists */}
+                    {savedPlaylists.length === 0 && (
+                        <p className="text-sm text-[#E5E7EB]/60">
+                            No playlists saved yet
+                        </p>
+                    )}
+
+                    {savedPlaylists.map(name => (
+                        <div
+                            key={name}
+                            className={`border flex rounded duration-300 hover:scale-103
+                                        ${name === playlistName ? "bg-[#4D5562] drop-shadow-[0_0_5px_#C93B76] border-[#C93B76]" : "bg-[#121826a6] border-transparent"}`}
                         >
-                            {name}
-                        </button>
-                        <button
-                            type="button"
-                            title="remove track"
-                            onClick={() => deletePlaylist(name)}
-                            className="cursor-pointer aspect-1/1 text-[25px] rounded text-[#C93B76] duration-300
-                                        hover:drop-shadow-[0_0_5px_#C93B76] group/button"
-                        >
-                            <MdDeleteForever size={25} className="group-active/button:rotate-180 duration-200 mx-auto" />
-                        </button>
-                    </div>
-                ))}
+                            <button
+                                type="button"
+                                onClick={() => loadPlaylist(name)}
+                                className="cursor-pointer w-full flex items-center gap-3 p-2"
+                            >
+                                {name}
+                            </button>
+                            <button
+                                type="button"
+                                title="remove track"
+                                onClick={() => deletePlaylist(name)}
+                                className="cursor-pointer aspect-1/1 text-[25px] rounded text-[#C93B76] duration-300
+                                            hover:drop-shadow-[0_0_5px_#C93B76] group/button"
+                            >
+                                <MdDeleteForever size={25} className="group-active/button:rotate-180 duration-200 mx-auto" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

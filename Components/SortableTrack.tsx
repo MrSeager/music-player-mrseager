@@ -44,23 +44,23 @@ export default function SortableTrack({
                             }`}>
                 <button
                     type="button"
-                    className="cursor-pointer w-full flex items-center gap-3 p-2"
+                    className="cursor-pointer w-full grid grid-cols-12 items-center gap-3 p-2"
                     onClick={() => setCurrTrack(index)}
                 >
                     <h3 className="font-semibold">{index + 1}.</h3>
 
-                    <div className="relative w-12 h-12">
+                    <div className="relative w-12 h-12 col-span-2">
                         <Image
                             src={track.cover || "/images/cover-2.jpg"}
                             alt="cover"
                             fill
-                            className="object-cover rounded"
+                            className="object-cover rounded pointer-events-none"
                         />
                     </div>
 
-                    <div className="flex flex-col text-start text-[#E5E7EB]">
-                        <p className="text-sm font-semibold">{track.title}</p>
-                        <p className="text-xs opacity-70">{track.artist}</p>
+                    <div className="flex flex-col text-start text-[#E5E7EB] col-span-9">
+                        <p className="text-sm font-semibold truncate">{track.title}</p>
+                        <p className="text-xs opacity-70 truncate">{track.artist}</p>
                     </div>
                 </button>
 

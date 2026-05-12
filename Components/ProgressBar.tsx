@@ -43,7 +43,7 @@ export default function ProgressBar({ audioRef, currentTime, duration, setCurren
     }
 
     return(
-        <div className="grid grid-cols-2 w-full">
+        <div className="grid grid-cols-2 w-full select-none">
             <p className="text-[13px] text-[#4D5562]">{formatTime(currentTime)}</p>
             <p className="text-[13px] text-[#4D5562] text-end">{formatTime(duration)}</p>
             <input
